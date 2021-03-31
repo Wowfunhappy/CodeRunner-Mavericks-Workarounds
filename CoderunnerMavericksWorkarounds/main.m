@@ -14,9 +14,7 @@
 @end
 
 @implementation NSObject (main)
-
 + (void)load {
     ZKSwizzle(myNSMethodSignature, NSMethodSignature);
 }
-
 @end
