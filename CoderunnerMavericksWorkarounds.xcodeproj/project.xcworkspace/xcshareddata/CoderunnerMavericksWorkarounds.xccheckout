@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>EAC7A833-4375-4F8B-80B8-AF3F1EA5BBB6</string>
+	<key>IDESourceControlProjectName</key>
+	<string>CoderunnerMavericksWorkarounds</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>CoderunnerMavericksWorkarounds.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Pages-Mavericks-Workaround</string>
+		</dict>
+	</array>
+</dict>
+</plist>

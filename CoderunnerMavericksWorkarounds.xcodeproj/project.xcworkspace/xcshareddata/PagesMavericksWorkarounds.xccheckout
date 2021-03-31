@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>385E1126-EA2E-4EA7-898F-FBD0B6BFC0EF</string>
+	<key>IDESourceControlProjectName</key>
+	<string>PagesMavericksWorkarounds</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>ECA3231A03615AB7927212B0BEBFBC3B32069630</key>
+		<string>https://github.com/Wowfunhappy/QuickTime-Fixer.git</string>
+		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>PagesMavericksWorkarounds.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>ECA3231A03615AB7927212B0BEBFBC3B32069630</key>
+		<string>../../../QuickTime-Fixer</string>
+		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Pages-Mavericks-Workaround</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>ECA3231A03615AB7927212B0BEBFBC3B32069630</string>
+			<key>IDESourceControlWCCName</key>
+			<string>QuickTime-Fixer</string>
+		</dict>
+	</array>
+</dict>
+</plist>
