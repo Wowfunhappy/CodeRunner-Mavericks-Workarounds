@@ -10,6 +10,8 @@
 	<string>CoderunnerMavericksWorkarounds</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>7FE0E0AB925DEC2FCD022EEF33AA7AE2534E23F4</key>
+		<string>https://github.com/Wowfunhappy/CodeRunner-Mavericks-Workarounds.git</string>
 		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
 		<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
 	</dict>
@@ -17,17 +19,27 @@
 	<string>CoderunnerMavericksWorkarounds.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<key>7FE0E0AB925DEC2FCD022EEF33AA7AE2534E23F4</key>
 		<string>../..</string>
+		<key>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</key>
+		<string>../../../Pages-Mavericks-Workaround</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://github.com/Wowfunhappy/Pages-Mavericks-Workaround.git</string>
+	<string>https://github.com/Wowfunhappy/CodeRunner-Mavericks-Workarounds.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>F7F8E5A4C69D361E748069DD1E71DFCA2C8704D8</string>
+	<string>7FE0E0AB925DEC2FCD022EEF33AA7AE2534E23F4</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>7FE0E0AB925DEC2FCD022EEF33AA7AE2534E23F4</string>
+			<key>IDESourceControlWCCName</key>
+			<string>CodeRunner-Mavericks-Workarounds</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
