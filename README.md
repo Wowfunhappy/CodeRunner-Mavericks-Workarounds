@@ -1,5 +1,5 @@
 # CodeRunner-Mavericks-Workarounds
-Fixes CodeRunner 3.1 (https://coderunnerapp.com/) on OS X 10.9 Mavericks. Unaffiliated with the original developer.
+Fixes CodeRunner 3.1 (https://coderunnerapp.com/blog/releasenotes/3.1/) on OS X 10.9 Mavericks. Unaffiliated with the original developer.
 
 ## Installation Instructions
 1. Download CodeRunner 3.1 from https://coderunnerapp.com/blog/releasenotes/3.1/.
