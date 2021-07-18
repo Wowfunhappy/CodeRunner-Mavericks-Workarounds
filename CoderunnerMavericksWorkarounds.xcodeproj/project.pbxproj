@@ -99,7 +99,7 @@
 				AB4319052590EA1B00AE868B /* Sources */,
 				AB4319062590EA1B00AE868B /* Frameworks */,
 				AB4319072590EA1B00AE868B /* Headers */,
-				AB4319082590EA1B00AE868B /* Resources */,
+				ABB6968126A35CDC00E8E1AF /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -141,15 +141,21 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		AB4319082590EA1B00AE868B /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
+/* Begin PBXShellScriptBuildPhase section */
+		ABB6968126A35CDC00E8E1AF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
 			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp '/Users/jonathan/Library/Developer/Xcode/DerivedData/CoderunnerMavericksWorkarounds-abcqczhexhgtataulnfjvnbtuhwb/Build/Products/Release/CoderunnerMavericksWorkarounds.framework/Versions/A/CoderunnerMavericksWorkarounds' '/Volumes/Macintosh HD-1/Applications/CodeRunner.app/Contents/Frameworks/CodeRunnerMavericksWorkarounds.dylib'";
 		};
-/* End PBXResourcesBuildPhase section */
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AB4319052590EA1B00AE868B /* Sources */ = {
