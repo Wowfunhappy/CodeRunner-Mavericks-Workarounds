@@ -12,13 +12,13 @@
 @implementation myNSTabView
 
 - (void)selectTabViewItem:(id)arg1 {
-    ZKOrig(void, arg1);
     [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+    ZKOrig(void, arg1);
 }
 
 - (void)removeTabViewItem:(id)arg1 {
-    ZKOrig(void, arg1);
     [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+    ZKOrig(void, arg1);
 }
 
 @end
@@ -42,6 +42,9 @@
 
 - (void)setNotVisible {
     [self setIsVisible:false animate:false];
+}
+
+- (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
