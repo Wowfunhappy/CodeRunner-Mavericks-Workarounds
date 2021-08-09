@@ -46,6 +46,7 @@
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 @end
@@ -53,7 +54,7 @@
 
 
 
-/* Fixes lots of crashes, such as when the user opens Preferences.
+/* Fixes most crashes, such as when the user opens Preferences.
  
  I don't know why this works. I'm a simple guy. I look at the crash log, and the crash log says the app crashed because
  signatureWithObjCTypes's type signature was empty. So I made it so it can't be empty. And now the app doesn't crash. */
@@ -97,6 +98,57 @@
 
 
 
+/*CodeRunner crashes when the user tries to print (As in, to a paper printer.)
+ (I don't know who prints out their code, but accidental keypresses happen and CodeRunner should never crash!)
+ 
+ The crash is caused by a use-after-free error. We can fix it crudely by no-op'ing NSAttributeDictionary's release
+ method, but let's do so as infrequently as possible. Leaking a few bytes of memory only when the app would have
+ otherwised crashed > leaking all the memory all the time.
+ 
+ (This solution still bothers me, but hey, using Big Sur and/or Electron would waste far more memory...)
+ 
+ Todo: Fix this...?
+ */
+
+BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I did say this was crude!)
+
+@interface myEditor : NSObject
+@end
+
+
+@implementation myEditor
+
+- (void)print:(id)arg1 {
+    NSLog(@"CodeRunnerMavericksWorkarounds: Intentionally forcing CodeRunner to leak memory to avert a crash.");
+    shouldPreventNSAttributeDictionaryRelease = true;
+    ZKOrig(void, arg1);
+    shouldPreventNSAttributeDictionaryRelease = false;
+}
+
+@end
+
+
+
+
+@interface myNSAttributeDictionary : NSObject
+@end
+
+
+@implementation myNSAttributeDictionary
+
+- (oneway void)release {
+    if (shouldPreventNSAttributeDictionaryRelease) {
+        //Leak the memory instead of freeing it!
+        return;
+    }
+    ZKOrig(void);
+}
+
+@end
+
+
+
+
 @implementation NSObject (main)
 
 + (void)load {
@@ -104,6 +156,8 @@
     ZKSwizzle(myNSTextFinderIndicatorManager, NSTextFinderIndicatorManager);
     ZKSwizzle(myNSMethodSignature, NSMethodSignature);
     ZKSwizzle(myNSMenu, NSMenu);
+    ZKSwizzle(myEditor, Editor);
+    ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
 }
 
 @end

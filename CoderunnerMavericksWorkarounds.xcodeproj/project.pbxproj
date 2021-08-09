@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		AB4319102590EA1B00AE868B /* CoderunnerMavericksWorkarounds.h in Headers */ = {isa = PBXBuildFile; fileRef = AB43190F2590EA1B00AE868B /* CoderunnerMavericksWorkarounds.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AB43192B2590EAB100AE868B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = AB4319292590EAB100AE868B /* main.m */; };
 		AB43192F2590EF0000AE868B /* ZKSwizzle.h in Headers */ = {isa = PBXBuildFile; fileRef = AB43192D2590EF0000AE868B /* ZKSwizzle.h */; };
 		AB4319302590EF0000AE868B /* ZKSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = AB43192E2590EF0000AE868B /* ZKSwizzle.m */; };
@@ -16,7 +15,6 @@
 /* Begin PBXFileReference section */
 		AB43190A2590EA1B00AE868B /* CoderunnerMavericksWorkarounds.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CoderunnerMavericksWorkarounds.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB43190E2590EA1B00AE868B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AB43190F2590EA1B00AE868B /* CoderunnerMavericksWorkarounds.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CoderunnerMavericksWorkarounds.h; sourceTree = "<group>"; };
 		AB4319292590EAB100AE868B /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		AB43192D2590EF0000AE868B /* ZKSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZKSwizzle.h; sourceTree = "<group>"; };
 		AB43192E2590EF0000AE868B /* ZKSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZKSwizzle.m; sourceTree = "<group>"; };
@@ -53,7 +51,6 @@
 			isa = PBXGroup;
 			children = (
 				AB43192C2590EF0000AE868B /* ZKSwizzle */,
-				AB43190F2590EA1B00AE868B /* CoderunnerMavericksWorkarounds.h */,
 				AB43190D2590EA1B00AE868B /* Supporting Files */,
 				AB4319292590EAB100AE868B /* main.m */,
 			);
@@ -85,7 +82,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				AB43192F2590EF0000AE868B /* ZKSwizzle.h in Headers */,
-				AB4319102590EA1B00AE868B /* CoderunnerMavericksWorkarounds.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,19 +172,15 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -218,21 +210,17 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
