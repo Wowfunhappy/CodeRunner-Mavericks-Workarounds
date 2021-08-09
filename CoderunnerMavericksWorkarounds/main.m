@@ -55,7 +55,8 @@
 
 /* Fixes lots of crashes, such as when the user opens Preferences.
  
- I don't know why this works. I'm a simple guy. I look at the crash log, and the crash log says the app crashed because signatureWithObjCTypes's type signature was empty. So I made it so it can't be empty. And now the app doesn't crash. */
+ I don't know why this works. I'm a simple guy. I look at the crash log, and the crash log says the app crashed because
+ signatureWithObjCTypes's type signature was empty. So I made it so it can't be empty. And now the app doesn't crash. */
 
 @interface myNSMethodSignature : NSObject
 @end
@@ -75,7 +76,8 @@
 
 
 
-/* Fixes a problem which occurs when the user (1) saves and closes a FooLanguage file, (2) disables FooLanguage in CodeRunner Preferences, and (3) re-opens the FooLanguage file. */
+/* Fixes a problem which occurs when the user (1) saves and closes a FooLanguage file, (2) disables FooLanguage in
+ CodeRunner Preferences, and (3) re-opens the FooLanguage file. */
 
 @interface myNSMenu : NSView
 @end
