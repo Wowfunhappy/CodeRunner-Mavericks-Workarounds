@@ -12,13 +12,13 @@
 @implementation myNSTabView
 
 - (void)selectTabViewItem:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
-    ZKOrig(void, arg1);
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+	ZKOrig(void, arg1);
 }
 
 - (void)removeTabViewItem:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
-    ZKOrig(void, arg1);
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+	ZKOrig(void, arg1);
 }
 
 @end
@@ -36,17 +36,17 @@
 @implementation myNSTextFinderIndicatorManager
 
 - (id)initWithTextFinderImpl:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setNotVisible) name:@"tabChanged" object:nil];
-    return ZKOrig(id, arg1);
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setNotVisible) name:@"tabChanged" object:nil];
+	return ZKOrig(id, arg1);
 }
 
 - (void)setNotVisible {
-    [self setIsVisible:false animate:false];
+	[self setIsVisible:false animate:false];
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[super dealloc];
 }
 
 @end
@@ -66,10 +66,10 @@
 @implementation myNSMethodSignature
 
 + (id)signatureWithObjCTypes:(const char *)types {
-    if (strcmp(types, "") == 0) {
-        return nil;
-    }
-    return ZKOrig(id, types);
+	if (strcmp(types, "") == 0) {
+		return nil;
+	}
+	return ZKOrig(id, types);
 }
 
 @end
@@ -87,10 +87,10 @@
 @implementation myNSMenu
 
 - (NSInteger)indexOfItemWithTitle:(NSString *)title {
-    if (!title) {
-        return 0;
-    }
-    return ZKOrig(NSInteger, title);
+	if (!title) {
+		return 0;
+	}
+	return ZKOrig(NSInteger, title);
 }
 
 @end
@@ -119,10 +119,10 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 @implementation myEditor
 
 - (void)print:(id)arg1 {
-    NSLog(@"CodeRunnerMavericksWorkarounds: Intentionally forcing CodeRunner to leak memory to avert a crash.");
-    shouldPreventNSAttributeDictionaryRelease = true;
-    ZKOrig(void, arg1);
-    shouldPreventNSAttributeDictionaryRelease = false;
+	NSLog(@"CodeRunnerMavericksWorkarounds: Intentionally forcing CodeRunner to leak memory to avert a crash.");
+	shouldPreventNSAttributeDictionaryRelease = true;
+	ZKOrig(void, arg1);
+	shouldPreventNSAttributeDictionaryRelease = false;
 }
 
 @end
@@ -137,11 +137,11 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 @implementation myNSAttributeDictionary
 
 - (oneway void)release {
-    if (shouldPreventNSAttributeDictionaryRelease) {
-        //Leak the memory instead of freeing it!
-        return;
-    }
-    ZKOrig(void);
+	if (shouldPreventNSAttributeDictionaryRelease) {
+		//Leak the memory instead of freeing it!
+		return;
+	}
+	ZKOrig(void);
 }
 
 @end
@@ -152,12 +152,12 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 @implementation NSObject (main)
 
 + (void)load {
-    ZKSwizzle(myNSTabView, NSTabView);
-    ZKSwizzle(myNSTextFinderIndicatorManager, NSTextFinderIndicatorManager);
-    ZKSwizzle(myNSMethodSignature, NSMethodSignature);
-    ZKSwizzle(myNSMenu, NSMenu);
-    ZKSwizzle(myEditor, Editor);
-    ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
+	ZKSwizzle(myNSTabView, NSTabView);
+	ZKSwizzle(myNSTextFinderIndicatorManager, NSTextFinderIndicatorManager);
+	ZKSwizzle(myNSMethodSignature, NSMethodSignature);
+	ZKSwizzle(myNSMenu, NSMenu);
+	ZKSwizzle(myEditor, Editor);
+	ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
 }
 
 @end
