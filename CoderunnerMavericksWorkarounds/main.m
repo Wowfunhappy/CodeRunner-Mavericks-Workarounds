@@ -149,6 +149,37 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 
 
 
+@interface myNSUserDefaults : NSObject
+@end
+
+
+@implementation myNSUserDefaults
+
+// For some reason, CodeRunner reads the preferred scrollbar style from NSUserDefaults instead of using [NSScroller preferredScrollerStyle].
+// This causes problems if scrollbars are set to "Automatic", but the user is using a mouse rather than a Trackpad.
+// When CodeRunner queries NSUserDefaults, we'll look at [NSScroller preferredScrollerStyle] instead and respond accordingly.
+
+- (id)objectForKey:(NSString *)defaultName {
+	if ([defaultName isEqual: @"AppleShowScrollBars"]) {
+		// Problem: [NSScroller preferredScrollerStyle] will itself read AppleShowScrollBars from NSUserDefaults, causing infinite recursion!
+		// Don't call [NSScroller preferredScrollerStyle] unless this method is invoked by CodeRunner itself (versus AppKit).
+		NSString *caller = [[[NSThread callStackSymbols] objectAtIndex:1] substringWithRange:NSMakeRange(4, 10)];
+		if ([caller isEqualToString:@"CodeRunner"]) {
+			if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
+				return @"Always";
+			} else {
+				return @"WhenScrolling";
+			}
+		}
+	}
+	return ZKOrig(id, defaultName);
+}
+
+@end
+
+
+
+
 @implementation NSObject (main)
 
 + (void)load {
@@ -158,6 +189,7 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 	ZKSwizzle(myNSMenu, NSMenu);
 	ZKSwizzle(myEditor, Editor);
 	ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
+	ZKSwizzle(myNSUserDefaults, NSUserDefaults);
 }
 
 @end
