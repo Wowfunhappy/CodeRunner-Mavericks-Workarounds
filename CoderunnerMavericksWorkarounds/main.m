@@ -56,8 +56,9 @@
 
 /* Fixes most crashes, such as when the user opens Preferences.
  
- I don't know why this works. I'm a simple guy. I look at the crash log, and the crash log says the app crashed because
- signatureWithObjCTypes's type signature was empty. So I made it so it can't be empty. And now the app doesn't crash. */
+ I don't know why this works. I'm a simple guy. I look at the crash log, and the crash log says the app
+ crashed because signatureWithObjCTypes's type signature was empty. So I made it so it can't be empty.
+ And now the app doesn't crash. */
 
 @interface myNSMethodSignature : NSObject
 @end
@@ -77,8 +78,8 @@
 
 
 
-/* Fixes a problem which occurs when the user (1) saves and closes a FooLanguage file, (2) disables FooLanguage in
- CodeRunner Preferences, and (3) re-opens the FooLanguage file. */
+/* Fixes a problem which occurs when the user (1) saves and closes a FooLanguage file,
+ (2) disables FooLanguage in CodeRunner Preferences, and (3) re-opens the FooLanguage file. */
 
 @interface myNSMenu : NSView
 @end
@@ -131,21 +132,25 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
  */
 
 - (void)showFindIndicatorForRange:(NSRange)charRange {
-    
+    ZKOrig(void, charRange);
     [[self textStorage] addAttribute:NSBackgroundColorAttributeName
-                               value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.4]
-                               range:charRange]; // Add new highlight
+                               value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.25]
+                               range:charRange];
     
     NSValue *rangeValue = [NSValue valueWithRange:charRange];
     objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)setSelectedRanges:(id)arg1 affinity:(unsigned long long)arg2 stillSelecting:(BOOL)arg3{
-    //remove old match highlight
+    ZKOrig(void, arg1, arg2, arg3);
     NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
     [[self textStorage] removeAttribute:NSBackgroundColorAttributeName range:lastMatchHighlight];
-    
-    ZKOrig(void, arg1, arg2, arg3);
+}
+
+//Also not a bug, but CodeRunner overrides OS X's default `look up in dictionary` functionality to search documentation.
+//Let's make it not do that.
+- (void)quickLookWithEvent:(id)arg1 {
+    [super quickLookWithEvent:arg1];
 }
 
 @end
@@ -208,54 +213,22 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 @implementation myProcessManager
 
-- (void)addProcess:(id)arg1 {
-    NSLog(@"(void)addProcess:(id)%@", arg1);
-    ZKOrig(void, arg1);
-}
+/*
+ This is my current attempt to remove an intermittent bug which has been driving me crazy for years:
+ at some point after you've been using CodeRunner for a while (running and editing different code and on),
+ you'll press the run button but nothing will appear in the console window, and CodeRunner will begin
+ consuming a huge amount of CPU. You can cancel and re-run the script, which might work that time, but the
+ problem will become increasingly frequent until you restart CodeRunner.
+ 
+ This is my current attempt at a (crude) fix. I'm not 100% sure whether it works yet, but so far,
+ the issue has not occurred with the fix in place. CodeRunner appears to keep a list of all running
+ processes, and I think the bug may occur when CodeRunner erroneously removes a process form the list.
+ So we'll just keep all processes in the list instead of removing them. It's a bit ugly,
+ but I have not noticed any side effects.
+ */
 
 - (void)removeProcess:(id)arg1 {
-    NSLog(@"(void)removeProcess:(id)%@", arg1);
-    //ZKOrig(void, arg1);
-}
-
-- (void)resume {
-    NSLog(@"(void)resume");
-    ZKOrig(void);
-}
-
-@end
-
-
-
-@interface myRunner : NSObject
-@end
-
-
-@implementation myRunner
-
-- (void)process:(id)arg1 didReadData:(id)arg2 {
-    //NSLog(@"(void)process:(id)%@ didReadData:(id)%@", arg1, arg2);
-    ZKOrig(void, arg1, arg2);
-}
-
-- (void)process:(id)arg1 didExitWithStatus:(int)arg2 time:(float)arg3; {
-    NSLog(@"(void)process:(id)%@ didExitWithStatus:(int)%d time:(float)%f", arg1, arg2, arg3);
-    ZKOrig(void, arg1, arg2, arg3);
-}
-
-- (void)processDidExit:(id)arg1 {
-    NSLog(@"(void)processDidExit:(id)%@", arg1);
-    ZKOrig(void, arg1);
-}
-
-- (void)runWithFilePath:(id)arg1 {
-    NSLog(@"(void)runWithFilePath:(id)%@", arg1);
-    ZKOrig(void, arg1);
-}
-
-- (void)run:(id)arg1 {
-    NSLog(@"(void)run:(id)%@", arg1);
-    ZKOrig(void, arg1);
+    //Do nothing. Keep all processes in list.
 }
 
 @end
@@ -275,7 +248,7 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     NSRect visibleRect = [[self.enclosingScrollView contentView] documentVisibleRect];
     NSRect bounds = [[self.enclosingScrollView documentView] bounds];
     
-    if (NSMaxY(visibleRect) >= NSMaxY(bounds)) {
+    if (NSMaxY(visibleRect) >= NSMaxY(bounds) - 1) {
         return true;
     } else {
         return false;
@@ -297,9 +270,7 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 	ZKSwizzle(myEditor, Editor);
 	ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
 	ZKSwizzle(myNSUserDefaults, NSUserDefaults);
-    
     ZKSwizzle(myProcessManager, ProcessManager);
-    ZKSwizzle(myRunner, Runner);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
 }
 
