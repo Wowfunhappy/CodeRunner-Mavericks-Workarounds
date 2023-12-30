@@ -97,8 +97,16 @@
 
 
 
+BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
-/*CodeRunner crashes when the user tries to print (As in, to a paper printer.)
+@interface myEditor : NSTextView
+@end
+
+
+@implementation myEditor
+
+/*
+ CodeRunner crashes when the user tries to print (As in, to a paper printer.)
  (I don't know who prints out their code, but accidental keypresses happen and CodeRunner should never crash!)
  
  The crash is caused by a use-after-free error. We can fix it crudely by no-op'ing NSAttributeDictionary's release
@@ -110,19 +118,34 @@
  Todo: Fix this...?
  */
 
-BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I did say this was crude!)
-
-@interface myEditor : NSObject
-@end
-
-
-@implementation myEditor
-
 - (void)print:(id)arg1 {
 	NSLog(@"CodeRunnerMavericksWorkarounds: Intentionally forcing CodeRunner to leak memory to avert a crash.");
 	shouldPreventNSAttributeDictionaryRelease = true;
 	ZKOrig(void, arg1);
 	shouldPreventNSAttributeDictionaryRelease = false;
+}
+
+/*
+ Highlight matching parenthesis/brackets (for more than a few seconds).
+ Not technically a bug fix, but a feature I need!
+ */
+
+- (void)showFindIndicatorForRange:(NSRange)charRange {
+    
+    [[self textStorage] addAttribute:NSBackgroundColorAttributeName
+                               value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.4]
+                               range:charRange]; // Add new highlight
+    
+    NSValue *rangeValue = [NSValue valueWithRange:charRange];
+    objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)setSelectedRanges:(id)arg1 affinity:(unsigned long long)arg2 stillSelecting:(BOOL)arg3{
+    //remove old match highlight
+    NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
+    [[self textStorage] removeAttribute:NSBackgroundColorAttributeName range:lastMatchHighlight];
+    
+    ZKOrig(void, arg1, arg2, arg3);
 }
 
 @end
@@ -160,19 +183,103 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 // When CodeRunner queries NSUserDefaults, we'll look at [NSScroller preferredScrollerStyle] instead and respond accordingly.
 
 - (id)objectForKey:(NSString *)defaultName {
-	if ([defaultName isEqual: @"AppleShowScrollBars"]) {
-		// Problem: [NSScroller preferredScrollerStyle] will itself read AppleShowScrollBars from NSUserDefaults, causing infinite recursion!
-		// Don't call [NSScroller preferredScrollerStyle] unless this method is invoked by CodeRunner itself (versus AppKit).
-		NSString *caller = [[[NSThread callStackSymbols] objectAtIndex:1] substringWithRange:NSMakeRange(4, 10)];
-		if ([caller isEqualToString:@"CodeRunner"]) {
-			if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
-				return @"Always";
-			} else {
-				return @"WhenScrolling";
-			}
-		}
-	}
-	return ZKOrig(id, defaultName);
+    if ([defaultName isEqual: @"AppleShowScrollBars"]) {
+        // Problem: [NSScroller preferredScrollerStyle] will itself read AppleShowScrollBars from NSUserDefaults, causing infinite recursion!
+        // Don't call [NSScroller preferredScrollerStyle] unless this method is invoked by CodeRunner itself (versus AppKit).
+        NSString *caller = [[[NSThread callStackSymbols] objectAtIndex:1] substringWithRange:NSMakeRange(4, 10)];
+        if ([caller isEqualToString:@"CodeRunner"]) {
+            if ([NSScroller preferredScrollerStyle] == NSScrollerStyleLegacy) {
+                return @"Always";
+            } else {
+                return @"WhenScrolling";
+            }
+        }
+    }
+    return ZKOrig(id, defaultName);
+}
+
+@end
+
+
+
+@interface myProcessManager : NSObject
+@end
+
+
+@implementation myProcessManager
+
+- (void)addProcess:(id)arg1 {
+    NSLog(@"(void)addProcess:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)removeProcess:(id)arg1 {
+    NSLog(@"(void)removeProcess:(id)%@", arg1);
+    //ZKOrig(void, arg1);
+}
+
+- (void)resume {
+    NSLog(@"(void)resume");
+    ZKOrig(void);
+}
+
+@end
+
+
+
+@interface myRunner : NSObject
+@end
+
+
+@implementation myRunner
+
+- (void)process:(id)arg1 didReadData:(id)arg2 {
+    //NSLog(@"(void)process:(id)%@ didReadData:(id)%@", arg1, arg2);
+    ZKOrig(void, arg1, arg2);
+}
+
+- (void)process:(id)arg1 didExitWithStatus:(int)arg2 time:(float)arg3; {
+    NSLog(@"(void)process:(id)%@ didExitWithStatus:(int)%d time:(float)%f", arg1, arg2, arg3);
+    ZKOrig(void, arg1, arg2, arg3);
+}
+
+- (void)processDidExit:(id)arg1 {
+    NSLog(@"(void)processDidExit:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)runWithFilePath:(id)arg1 {
+    NSLog(@"(void)runWithFilePath:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)run:(id)arg1 {
+    NSLog(@"(void)run:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+@end
+
+
+
+@interface myConsoleTextView : NSTextView
+@end
+
+
+@implementation myConsoleTextView
+
+//Fixes: In a console which outputs lots of text quickly, it's very difficult to scroll up!
+//I'm not sure if this is Mavericks-specific, but it's annoying and worth fixing.
+
+- (BOOL)shouldScrollToBottom {
+    NSRect visibleRect = [[self.enclosingScrollView contentView] documentVisibleRect];
+    NSRect bounds = [[self.enclosingScrollView documentView] bounds];
+    
+    if (NSMaxY(visibleRect) >= NSMaxY(bounds)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 @end
@@ -190,6 +297,10 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable! (I d
 	ZKSwizzle(myEditor, Editor);
 	ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
 	ZKSwizzle(myNSUserDefaults, NSUserDefaults);
+    
+    ZKSwizzle(myProcessManager, ProcessManager);
+    ZKSwizzle(myRunner, Runner);
+    ZKSwizzle(myConsoleTextView, ConsoleTextView);
 }
 
 @end
