@@ -231,39 +231,6 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 
 
-/*
- An intermittent bug which has been driving me crazy for years: at some point after you've been using
- CodeRunner for a while (running and editing different code and on), you'll press the run button but
- nothing will appear in the console window, and CodeRunner will begin consuming a huge amount of CPU.
- You can cancel and re-run the script, which might work that time,
- but the problem will become increasingly frequent until you restart CodeRunner.
- 
- This is my current attempt at a crude fix. It assumes the issue is due to a deadlock
- in [ProcessManager mainLoop]. All calls to [NSRecursiveLock lock] (not just in mainLoop but
- everywhere in CodeRunner, I don't know how to limit it) will be replaced with lockBeforeDate,
- so execution continues anyway after a time limit. This could of course lead to race conditions,
- but empiracally it seems to be fine.
- 
- I'm not 100% sure whether this works yet.
- */
-
-@interface myNSRecursiveLock : NSRecursiveLock
-@end
-
-
-@implementation myNSRecursiveLock
-
-- (void)lock {
-    BOOL result = [self lockBeforeDate: [NSDate dateWithTimeIntervalSinceNow:2]];
-    if (!result) {
-        NSLog(@"CodeRunnerMavericksWorkarounds: Failed to acquire lock after two seconds. Continued anyway to avert deadlock.");
-    }
-}
-
-@end
-
-
-
 @implementation NSObject (main)
 
 + (void)load {
@@ -275,7 +242,6 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
-    ZKSwizzle(myNSRecursiveLock, NSRecursiveLock);
 }
 
 @end
