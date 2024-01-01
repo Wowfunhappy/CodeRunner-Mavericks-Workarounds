@@ -231,6 +231,211 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 
 
+@interface myProcess : NSObject
+@end
+
+
+@implementation myProcess
+
+- (void)startProcessWithExecutablePath:(id)arg1 args:(id)arg2 env:(id)arg3 width:(int)arg4 height:(int)arg5 encoding:(unsigned long long)arg6 {
+    NSLog(@"(void)startProcessWithExecutablePath:(id)%@ args:(id)%@ env:(id)%@ width:(int)%d height:(int)%d encoding:(unsigned long long)%llu", arg1, arg2, arg3, arg4, arg5, arg6);
+    ZKOrig(void, arg1, arg2, arg3, arg4, arg5, arg6);
+    
+    /*NSTask *task = [[NSTask alloc] init];
+     
+     // Setting launch path to 1st parameter 'arg1'
+     task.launchPath = arg1;
+     
+     // Setting arguments to 2nd parameter 'arg2'
+     task.arguments = arg2;
+     
+     // Setting environment to 3rd parameter 'arg3'
+     task.environment = arg3;
+     
+     @try {
+     [task launch];
+     } // Catches and logs if there happens to be any errors
+     @catch (NSException *exception) {
+     NSLog(@"Failed to start task: %@", [exception description]);
+     }*/
+    
+    
+}
+
+- (void)waitForExitStatus {
+    NSLog(@"(void)waitForExitStatus");
+    
+    //    int fileDescriptor = ZKHookIvar(self, int, "fileDescriptor");
+    //    close(fileDescriptor);
+    
+    ZKOrig(void);
+}
+
+- (void)readWriteError {
+    NSLog(@"(void)readWriteError");
+    ZKOrig(void);
+}
+
+- (void)read {
+    //NSLog(@"(void)read");
+    ZKOrig(void);
+}
+
+- (void)write {
+    //NSLog(@"(void)write");
+    ZKOrig(void);
+}
+
+- (int)getFileDescriptor {
+    return ZKHookIvar(self, int, "fileDescriptor");
+}
+
+@end
+
+
+
+
+@interface myProcessManager : NSObject
+{
+    BOOL shouldTerminate; //this is bad, deal with later.
+}
+@end
+
+@implementation myProcessManager
+
+-(void)mainLoop {
+    //self->shouldTerminate = NO;
+    
+    while (true /*!self->shouldTerminate*/) {
+        for (myProcess *process in [self getProcesses]) {
+            [process read];
+            if ([process shouldWrite]) {
+                [process write];
+            }
+        }
+        [NSThread sleepForTimeInterval:0.01];
+        
+        /*[[self getLock] lock];
+        
+        for (myProcess *process in [self getProcesses]) {
+            int fd = [process getFileDescriptor];
+            if (fd < 0) {
+                [self removeProcess:process];
+                NSLog(@"process removed!");
+            } else {
+                [process read];
+                if ([process shouldWrite]) {
+                    [process write];
+                }
+            }
+        }
+        [[self getLock] unlock];*/
+    }
+}
+
+- (void)shouldTerminateLoop {
+    self->shouldTerminate = YES;
+}
+
+- (NSRecursiveLock*)getLock {
+    return ZKHookIvar(self, NSRecursiveLock *, "lock");
+}
+
+- (NSMutableArray*)getProcesses {
+    return ZKHookIvar(self, NSMutableArray *, "processes");
+}
+
+- (void)addProcess:(id)arg1 {
+    NSLog(@"(void)addProcess:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)removeProcess:(id)arg1 {
+    NSLog(@"(void)removeProcess:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)resume {
+    NSLog(@"(void)resume");
+    ZKOrig(void);
+}
+
+@end
+
+
+
+@interface myRunner : NSObject
+@end
+
+
+@implementation myRunner
+
+- (void)process:(id)arg1 didReadData:(id)arg2 {
+    //NSLog(@"(void)process:(id)%@ didReadData:(id)%@", arg1, arg2);
+    ZKOrig(void, arg1, arg2);
+}
+
+- (void)process:(id)arg1 didExitWithStatus:(int)arg2 time:(float)arg3; {
+    NSLog(@"(void)process:(id)%@ didExitWithStatus:(int)%d time:(float)%f", arg1, arg2, arg3);
+    ZKOrig(void, arg1, arg2, arg3);
+}
+
+- (void)processDidExit:(id)arg1 {
+    NSLog(@"(void)processDidExit:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)runWithFilePath:(id)arg1 {
+    NSLog(@"(void)runWithFilePath:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)run:(id)arg1 {
+    NSLog(@"(void)run:(id)%@", arg1);
+    ZKOrig(void, arg1);
+}
+
+- (void)stopRunningWithStatus:(int)arg1 {
+    NSLog(@"(void)stopRunningWithStatus:(int)%d", arg1);
+    ZKOrig(void, arg1);
+}
+
+@end
+
+
+
+
+@interface myNSThread : NSThread
+@end
+
+
+@implementation myNSThread
+
++ (void)detachNewThreadSelector:(SEL)selector toTarget:(id)target withObject:(id)argument {
+    NSLog(@"void)detachNewThreadSelector:(SEL)selector toTarget:(id)%@ withObject:(id)%@", target, argument);
+    ZKOrig(void, selector, target, argument);
+    /*static int calls = 0;
+    if (calls < 3) {
+        ZKOrig(void, selector, target, argument);
+        calls++;
+    }*/
+}
+
+- (void)start {
+    NSLog(@"start");
+    ZKOrig(void);
+}
+
+- (void)main {
+    NSLog(@"main");
+    ZKOrig(void);
+}
+
+@end
+
+
+
+
 @implementation NSObject (main)
 
 + (void)load {
@@ -242,6 +447,11 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
+    
+    ZKSwizzle(myProcess, Process);
+    ZKSwizzle(myProcessManager, ProcessManager);
+    ZKSwizzle(myRunner, Runner);
+    ZKSwizzle(myNSThread, NSThread);
 }
 
 @end
