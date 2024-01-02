@@ -270,8 +270,16 @@ a fixed time interval. And if I encounter the bug again after all of this, I am 
     }
 }
 
+- (NSRecursiveLock*)getLock {
+    return ZKHookIvar(self, NSRecursiveLock *, "lock");
+}
+
 - (NSMutableArray*)getProcesses {
-    return ZKHookIvar(self, NSMutableArray *, "processes");
+    NSRecursiveLock *lock = [self getLock];
+    [lock lock];
+    NSMutableArray *processesCopy = [ZKHookIvar(self, NSMutableArray *, "processes") copy];
+    [lock unlock];
+    return processesCopy;
 }
 
 @end
