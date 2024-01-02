@@ -287,44 +287,6 @@ a fixed time interval. And if I encounter the bug again after all of this, I am 
 
 
 
-@interface myDocument : NSDocument
-{
-    NSView *documentView;
-}
-@end
-
-
-@implementation myDocument
-
-//Normally, notifications will only appear if the CodeRunner window is not in focus.
-//We want notifications to always appear, because the running tab may not be in focus even if the window is.
-- (void)deliverUserNotificationWithTitle:(id)titleText {
-    [self displayNotificationViaTerminalNotifier: titleText];
-}
-
-- (void)displayNotificationViaTerminalNotifier: (NSString *)titleText {
-    //The normal way to make notifications appear when the app window is in focus
-    //is to override [userNotificationCenter:shouldPresentNotification].
-    //Unfortunately, we can't do that via swizzling, so we'll use Terminal Notifier.
-    
-    NSString *terminalNotifier = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"terminal-notifier/Contents/MacOS/terminal-notifier"];
-    NSString *command = [NSString stringWithFormat:@"%@ -sender \"%@\" -title \"%@\" -message \"%@\"", terminalNotifier, [[NSBundle mainBundle] bundleIdentifier], titleText, [self fullDisplayName]];
-    NSTask *task = [[NSTask alloc] init];
-    task.environment = @{};
-    [task setLaunchPath:@"/bin/sh"];
-    [task setArguments:@[@"-c", command]];
-    
-    NSPipe *pipe = [[NSPipe alloc] init];
-    [pipe fileHandleForReading];
-    [task setStandardOutput:pipe];
-    [task launch];
-}
-
-@end
-
-
-
-
 @implementation NSObject (main)
 
 + (void)load {
@@ -337,7 +299,6 @@ a fixed time interval. And if I encounter the bug again after all of this, I am 
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
     ZKSwizzle(myProcessManager, ProcessManager);
-    ZKSwizzle(myDocument, Document);
 }
 
 @end
