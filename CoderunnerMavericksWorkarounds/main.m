@@ -45,7 +45,7 @@
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"tabChanged" object:nil];
     [super dealloc];
 }
 
@@ -239,17 +239,17 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 @implementation myProcessManager
 
 /*
-An intermittent bug which has been driving me crazy for years: at some point after you've been using
-CodeRunner for a while (running and editing different code and on), you'll press the run button but
-nothing will appear in the console window, and CodeRunner will begin consuming a huge amount of CPU.
-You can cancel and re-run the script, which might work that time, but the problem will become
-increasingly frequent until you restart CodeRunner.
-
-The problem has something to do with this mainLoop method. This is my third attempt to fix this bug,
-so I'm going to just reimplement the whole method with a super simple version. The original (I think)
-used file descriptors to only read when there was new data available, but we're just going to read after
-a fixed time interval. And if I encounter the bug again after all of this, I am going to scream...
-*/
+ An intermittent bug which has been driving me crazy for years: at some point after you've been using
+ CodeRunner for a while (running and editing different code and on), you'll press the run button but
+ nothing will appear in the console window, and CodeRunner will begin consuming a huge amount of CPU.
+ You can cancel and re-run the script, which might work that time, but the problem will become
+ increasingly frequent until you restart CodeRunner.
+ 
+ The problem has something to do with this mainLoop method. This is my third attempt to fix this bug,
+ so I'm going to just reimplement the whole method with a super simple version. The original (I think)
+ used file descriptors to only read when there was new data available, but we're just going to read after
+ a fixed time interval. And if I encounter the bug again after all of this, I am going to scream...
+ */
 
 -(void)mainLoop {
     while (![[NSThread currentThread] isCancelled]) {
