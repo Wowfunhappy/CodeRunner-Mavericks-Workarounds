@@ -124,8 +124,8 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 - (void)setSelectedRanges:(id)arg1 affinity:(unsigned long long)arg2 stillSelecting:(BOOL)arg3{
     ZKOrig(void, arg1, arg2, arg3);
-    if ([[self textStorage] length] > 0) {
-        NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
+    NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
+    if (NSMaxRange(lastMatchHighlight) <= [[self textStorage] length]) {
         [[self textStorage] removeAttribute:NSBackgroundColorAttributeName range:lastMatchHighlight];
     }
 }
