@@ -112,18 +112,22 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 - (void)showFindIndicatorForRange:(NSRange)charRange {
     ZKOrig(void, charRange);
-    [[self textStorage] addAttribute:NSBackgroundColorAttributeName
-                               value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.5]
-                               range:charRange];
-    
-    NSValue *rangeValue = [NSValue valueWithRange:charRange];
-    objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if ([[self textStorage] length] > 0) {
+        [[self textStorage] addAttribute:NSBackgroundColorAttributeName
+                                   value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.4]
+                                   range:charRange];
+        
+        NSValue *rangeValue = [NSValue valueWithRange:charRange];
+        objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
 }
 
 - (void)setSelectedRanges:(id)arg1 affinity:(unsigned long long)arg2 stillSelecting:(BOOL)arg3{
     ZKOrig(void, arg1, arg2, arg3);
-    NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
-    [[self textStorage] removeAttribute:NSBackgroundColorAttributeName range:lastMatchHighlight];
+    if ([[self textStorage] length] > 0) {
+        NSRange lastMatchHighlight = [objc_getAssociatedObject(self, @selector(lastMatchHighlight)) rangeValue];
+        [[self textStorage] removeAttribute:NSBackgroundColorAttributeName range:lastMatchHighlight];
+    }
 }
 
 //Also not a bug, but CodeRunner overrides OS X's default `look up in dictionary` functionality to search documentation.
