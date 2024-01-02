@@ -250,15 +250,17 @@ a fixed time interval. And if I encounter the bug again after all of this, I am 
 -(void)mainLoop {
     while (![[NSThread currentThread] isCancelled]) {
         while ([[self getProcesses] count] > 0) {
-            for (Process *process in [self getProcesses]) {
-                [process read];
-                if ([process shouldWrite]) {
-                    [process write];
+            @autoreleasepool {
+                for (Process *process in [self getProcesses]) {
+                    [process read];
+                    if ([process shouldWrite]) {
+                        [process write];
+                    }
                 }
+                [NSThread sleepForTimeInterval:0.005];
             }
-            [NSThread sleepForTimeInterval:0.005];
-        }
         [NSThread sleepForTimeInterval:0.1];
+        }
     }
 }
 
