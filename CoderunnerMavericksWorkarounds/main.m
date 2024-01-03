@@ -5,6 +5,71 @@
 
 
 
+@interface myWindowController : NSWindowController
+@end
+
+
+@implementation myWindowController
+
+//If tab bar is hidden in full screen while toolbar is visible, an annoying visual anomaly appears.
+
+- (void)setTabBarHidden:(BOOL)arg1 updateDefaultsValue:(BOOL)arg2 {
+    if (true) {
+        //Tab bar will hide.
+        NSWindow *window = [self window];
+        if ([window styleMask] & NSFullScreenWindowMask && [[window toolbar] isVisible]) {
+            [[window toolbar] toggleToolbarHackToRemoveTabBarRemnant];
+        }
+    }
+    ZKOrig(void, arg1, arg2);
+}
+
+@end
+
+
+
+
+@interface myNSToolbar : NSToolbar
+@end
+
+
+@implementation myNSToolbar
+
+//Todo: find some type of toolbar update or redraw method which works instead of actually toggling the toolbar!
+- (void)toggleToolbarHackToRemoveTabBarRemnant {
+    NSDisableScreenUpdates();
+    [self setVisible:false];
+    [self performSelector:@selector(showToolBarThenEnableScreenUpdates) withObject:nil afterDelay:0.0001];
+}
+- (void)showToolBarThenEnableScreenUpdates {
+    [self setVisible:true];
+    [self performSelector:@selector(enableScreenUpdates) withObject:nil afterDelay:0.01];
+}
+- (void)enableScreenUpdates {
+    NSEnableScreenUpdates();
+}
+
+@end
+
+
+
+
+@interface myNSWindow : NSWindow
+@end
+
+
+@implementation myNSWindow
+
+- (void)toggleFullScreen:(id)sender {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"NSTextFinderIndicatorManagerShouldSetNotVisible" object:nil];
+    ZKOrig(void, sender);
+}
+
+@end
+
+
+
+
 @interface myNSTabView : NSTabView
 @end
 
@@ -12,12 +77,12 @@
 @implementation myNSTabView
 
 - (void)selectTabViewItem:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"NSTextFinderIndicatorManagerShouldSetNotVisible" object:nil];
     ZKOrig(void, arg1);
 }
 
 - (void)removeTabViewItem:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"tabChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"NSTextFinderIndicatorManagerShouldSetNotVisible" object:nil];
     ZKOrig(void, arg1);
 }
 
@@ -36,7 +101,7 @@
 @implementation myNSTextFinderIndicatorManager
 
 - (id)initWithTextFinderImpl:(id)arg1 {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setNotVisible) name:@"tabChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(setNotVisible) name:@"NSTextFinderIndicatorManagerShouldSetNotVisible" object:nil];
     return ZKOrig(id, arg1);
 }
 
@@ -45,7 +110,7 @@
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"tabChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"NSTextFinderIndicatorManagerShouldSetNotVisible" object:nil];
     [super dealloc];
 }
 
@@ -287,9 +352,50 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 
 
+@interface myDocument : NSDocument
+{
+    NSView *documentView;
+}
+@end
+
+
+@implementation myDocument
+
+//Normally, notifications will only appear if the CodeRunner window is not in focus.
+//We want notifications to always appear, because the running tab may not be in focus even if the window is.
+
+- (void)deliverUserNotificationWithTitle:(id)titleText {
+    NSUserNotification *notification = [[NSUserNotification alloc] init];
+    notification.title = titleText;
+    notification.informativeText = [self fullDisplayName];
+    [[NSUserNotificationCenter defaultUserNotificationCenter] scheduleNotification:notification];
+}
+
+@end
+
+
+
+
+@interface myAppDelegate : NSObject
+@end
+
+@implementation myAppDelegate
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *)center shouldPresentNotification:(NSUserNotification *)notification {
+    return true;
+}
+
+@end
+
+
+
+
 @implementation NSObject (main)
 
 + (void)load {
+    ZKSwizzle(myWindowController, WindowController);
+    ZKSwizzle(myNSToolbar, NSToolbar);
+    ZKSwizzle(myNSWindow, NSWindow);
     ZKSwizzle(myNSTabView, NSTabView);
     ZKSwizzle(myNSTextFinderIndicatorManager, NSTextFinderIndicatorManager);
     ZKSwizzle(myNSMethodSignature, NSMethodSignature);
@@ -299,6 +405,9 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
     ZKSwizzle(myProcessManager, ProcessManager);
+    
+    ZKSwizzle(myDocument, Document);
+    ZKSwizzle(myAppDelegate, AppDelegate);
 }
 
 @end
