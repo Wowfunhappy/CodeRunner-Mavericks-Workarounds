@@ -38,11 +38,11 @@
 - (void)hackToRemoveTabBarRemnant {
     NSDisableScreenUpdates();
     [self setVisible:false];
-    [self performSelector:@selector(showToolBarThenEnableScreenUpdates) withObject:nil afterDelay:0.0001];
+    [self performSelector:@selector(showToolBarThenEnableScreenUpdates) withObject:nil afterDelay:0.001];
 }
 - (void)showToolBarThenEnableScreenUpdates {
     [self setVisible:true];
-    [self performSelector:@selector(enableScreenUpdates) withObject:nil afterDelay:0.01];
+    [self performSelector:@selector(enableScreenUpdates) withObject:nil afterDelay:0.02];
 }
 - (void)enableScreenUpdates {
     NSEnableScreenUpdates();
