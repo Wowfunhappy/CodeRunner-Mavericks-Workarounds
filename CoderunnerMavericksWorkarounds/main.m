@@ -14,16 +14,15 @@
 //If tab bar is hidden in full screen while toolbar is visible, an annoying visual anomaly appears.
 
 - (void)setTabBarHidden:(BOOL)arg1 updateDefaultsValue:(BOOL)arg2 {
-    if (true) {
+    if (arg1) {
         //Tab bar will hide.
         NSWindow *window = [self window];
         if ([window styleMask] & NSFullScreenWindowMask && [[window toolbar] isVisible]) {
-            [[window toolbar] toggleToolbarHackToRemoveTabBarRemnant];
+            [[window toolbar] hackToRemoveTabBarRemnant];
         }
     }
     ZKOrig(void, arg1, arg2);
 }
-
 @end
 
 
@@ -36,7 +35,7 @@
 @implementation myNSToolbar
 
 //Todo: find some type of toolbar update or redraw method which works instead of actually toggling the toolbar!
-- (void)toggleToolbarHackToRemoveTabBarRemnant {
+- (void)hackToRemoveTabBarRemnant {
     NSDisableScreenUpdates();
     [self setVisible:false];
     [self performSelector:@selector(showToolBarThenEnableScreenUpdates) withObject:nil afterDelay:0.0001];
@@ -405,7 +404,6 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
     ZKSwizzle(myProcessManager, ProcessManager);
-    
     ZKSwizzle(myDocument, Document);
     ZKSwizzle(myAppDelegate, AppDelegate);
 }
