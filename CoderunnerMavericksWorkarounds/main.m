@@ -14,40 +14,17 @@
 //If tab bar is hidden in full screen while toolbar is visible, an annoying visual anomaly appears.
 
 - (void)setTabBarHidden:(BOOL)arg1 updateDefaultsValue:(BOOL)arg2 {
+    ZKOrig(void, arg1, arg2);
     if (arg1) {
         //Tab bar will hide.
         NSWindow *window = [self window];
         if ([window styleMask] & NSFullScreenWindowMask && [[window toolbar] isVisible]) {
-            [[window toolbar] hackToRemoveTabBarRemnant];
+            NSDisableScreenUpdates();
+            [[window toolbar] _noteDefaultMetricsChanged];
+            NSEnableScreenUpdates();
         }
     }
-    ZKOrig(void, arg1, arg2);
 }
-@end
-
-
-
-
-@interface myNSToolbar : NSToolbar
-@end
-
-
-@implementation myNSToolbar
-
-//Todo: find some type of toolbar update or redraw method which works instead of actually toggling the toolbar!
-- (void)hackToRemoveTabBarRemnant {
-    NSDisableScreenUpdates();
-    [self setVisible:false];
-    [self performSelector:@selector(showToolBarThenEnableScreenUpdates) withObject:nil afterDelay:0.001];
-}
-- (void)showToolBarThenEnableScreenUpdates {
-    [self setVisible:true];
-    [self performSelector:@selector(enableScreenUpdates) withObject:nil afterDelay:0.02];
-}
-- (void)enableScreenUpdates {
-    NSEnableScreenUpdates();
-}
-
 @end
 
 
@@ -393,7 +370,6 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 + (void)load {
     ZKSwizzle(myWindowController, WindowController);
-    ZKSwizzle(myNSToolbar, NSToolbar);
     ZKSwizzle(myNSWindow, NSWindow);
     ZKSwizzle(myNSTabView, NSTabView);
     ZKSwizzle(myNSTextFinderIndicatorManager, NSTextFinderIndicatorManager);
