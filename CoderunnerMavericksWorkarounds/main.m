@@ -286,10 +286,9 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
  You can cancel and re-run the script, which might work that time, but the problem will become
  increasingly frequent until you restart CodeRunner.
  
- The problem has something to do with this mainLoop method. This is my third attempt to fix this bug,
- so I'm going to just reimplement the whole method with a super simple version. The original (I think)
- used file descriptors to only read when there was new data available, but we're just going to read after
- a fixed time interval. And if I encounter the bug again after all of this, I am going to scream...
+ The problem has something to do with this mainLoop method, so I'm replacing it with a super simple implementation.
+ Whereas the original was (I think) using file descriptors to only read when there was new data available,
+ we're just going to read after a fixed time interval. This appears to have fixed the bug.
  */
 
 -(void)mainLoop {
@@ -337,8 +336,33 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 @implementation myDocument
 
+//Not Mavericks-specific, but... I guess the developer just forget to save the Run Command to extended attributes?
+//Other Run Settings, such as program input, are saved to extended attributes, but not the Run Command.
+//Regardless, I need this so I'm adding it.
+
+- (void)endInputSheet:(id)arg1 {
+    if (! [self isNewDocument]) {
+        if ([self didChangeRunCommand]) {
+            [[NSFileManager defaultManager] setExtendedAttribute:@"CodeRunner:RunCommand" value:[[self runCommand] dataUsingEncoding: NSUTF8StringEncoding] atPath:[self fileURL]];
+        } else {
+            [[NSFileManager defaultManager] removeExtendedAttribute:@"CodeRunner:RunCommand" atPath:[self fileURL]];
+        }
+    }
+    
+    ZKOrig(void, arg1);
+}
+
+- (BOOL)readFromURL:(id)arg1 ofType:(id)arg2 error:(NSError **)arg3 {
+    NSData* runCommand = [[NSFileManager defaultManager] extendedAttribute:@"CodeRunner:RunCommand" atPath:arg1];
+    if (runCommand) {
+        [self performSelector:@selector(setRunCommand:) withObject:([[NSString alloc] initWithData:runCommand encoding:NSUTF8StringEncoding]) afterDelay:0];
+    }
+    return ZKOrig(BOOL, arg1, arg2, arg3);
+}
+
 //Normally, notifications will only appear if the CodeRunner window is not in focus.
 //We want notifications to always appear, because the running tab may not be in focus even if the window is.
+//We also won't show icons, which (unfortunately) are overly-prominent in Mavericks's version of Notification Center.
 
 - (void)deliverUserNotificationWithTitle:(id)titleText {
     NSUserNotification *notification = [[NSUserNotification alloc] init];
