@@ -107,7 +107,8 @@
 @implementation myNSMethodSignature
 
 + (id)signatureWithObjCTypes:(const char *)types {
-    if (strcmp(types, "") == 0) {
+    //if (strcmp(types, "") == 0) {
+    if(types[0] == '\0') {
         return nil;
     }
     return ZKOrig(id, types);
@@ -342,11 +343,7 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 - (void)endInputSheet:(id)arg1 {
     if (! [self isNewDocument]) {
-        if ([self didChangeRunCommand]) {
-            [[NSFileManager defaultManager] setExtendedAttribute:@"CodeRunner:RunCommand" value:[[self runCommand] dataUsingEncoding: NSUTF8StringEncoding] atPath:[self fileURL]];
-        } else {
-            [[NSFileManager defaultManager] removeExtendedAttribute:@"CodeRunner:RunCommand" atPath:[self fileURL]];
-        }
+        [[NSFileManager defaultManager] setExtendedAttribute:@"CodeRunner:RunCommand" value:[[self runCommand] dataUsingEncoding: NSUTF8StringEncoding] atPath:[self fileURL]];
     }
     
     ZKOrig(void, arg1);
