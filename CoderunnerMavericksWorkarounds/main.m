@@ -107,8 +107,7 @@
 @implementation myNSMethodSignature
 
 + (id)signatureWithObjCTypes:(const char *)types {
-    //if (strcmp(types, "") == 0) {
-    if(types[0] == '\0') {
+    if(types[0] == '\0') { //if types is an empty string
         return nil;
     }
     return ZKOrig(id, types);
@@ -139,7 +138,6 @@
 
 
 
-BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 @interface myEditor : NSTextView
 @end
@@ -187,28 +185,18 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 - (void)print:(id)arg1 {
     NSLog(@"CodeRunnerMavericksWorkarounds: Intentionally forcing CodeRunner to leak memory to avert a crash.");
-    shouldPreventNSAttributeDictionaryRelease = true;
+    
+    Class NSAttributeDictionary = NSClassFromString(@"NSAttributeDictionary");
+    Method releaseMethod = class_getInstanceMethod([NSAttributeDictionary class], @selector(release));
+    IMP originalReleaseMethodImplementation = method_getImplementation(releaseMethod);
+    
+    // Use swizzling to replace [NSAttributeDictionary release] with a no-op
+    method_setImplementation(releaseMethod, imp_implementationWithBlock(^void(id self, SEL _cmd){ /* no-op */}));
+    
     ZKOrig(void, arg1);
-    shouldPreventNSAttributeDictionaryRelease = false;
-}
-
-@end
-
-
-
-
-@interface myNSAttributeDictionary : NSObject
-@end
-
-
-@implementation myNSAttributeDictionary
-
-- (oneway void)release {
-    if (shouldPreventNSAttributeDictionaryRelease) {
-        //See above; leak the memory instead of freeing it.
-        return;
-    }
-    ZKOrig(void);
+    
+    // Replace [NSAttributeDictionary release] with original function
+    method_setImplementation(releaseMethod, originalReleaseMethodImplementation);
 }
 
 @end
@@ -387,6 +375,22 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
 
 
 
+@interface mySyntaxColorer : NSObject
+@end
+
+@implementation mySyntaxColorer : NSObject
+
+- (void)didChangeTextInLineRange:(struct _NSRange)arg1 newLength:(unsigned long long)arg2 {
+    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^(void){
+        ZKOrig(void, arg1, arg2);
+    });
+}
+
+@end
+
+
+
+
 @implementation NSObject (main)
 
 + (void)load {
@@ -397,12 +401,12 @@ BOOL shouldPreventNSAttributeDictionaryRelease; //Warning: global variable!
     ZKSwizzle(myNSMethodSignature, NSMethodSignature);
     ZKSwizzle(myNSMenu, NSMenu);
     ZKSwizzle(myEditor, Editor);
-    ZKSwizzle(myNSAttributeDictionary, NSAttributeDictionary);
     ZKSwizzle(myNSUserDefaults, NSUserDefaults);
     ZKSwizzle(myConsoleTextView, ConsoleTextView);
     ZKSwizzle(myProcessManager, ProcessManager);
     ZKSwizzle(myDocument, Document);
     ZKSwizzle(myAppDelegate, AppDelegate);
+    ZKSwizzle(mySyntaxColorer, SyntaxColorer);
 }
 
 @end
