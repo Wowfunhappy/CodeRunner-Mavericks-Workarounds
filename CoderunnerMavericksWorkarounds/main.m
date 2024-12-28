@@ -180,7 +180,7 @@
  CodeRunner crashes when the user tries to print (As in, to a paper printer.)
  
  The crash is caused by a use-after-free error. We can fix it crudely by temporarily no-op'ing NSAttributeDictionary's release
- method. This is kind of ugly, but the amount of memory leaked is exceedingly trivial.
+ method. This is ugly, but the amount of memory leaked is exceedingly trivial and I don't have a better fix.
  */
 
 - (void)print:(id)arg1 {
@@ -283,14 +283,15 @@
 -(void)mainLoop {
     while (![[NSThread currentThread] isCancelled]) {
         @autoreleasepool {
-            while ([[self getProcesses] count] > 0) {
+            NSMutableArray *processes;
+            while ([(processes = [self getProcesses]) count] > 0) {
                 @autoreleasepool {
-                    for (Process *process in [self getProcesses]) {
+                    for (Process *process in processes) {
                         [process read];
                         if ([process shouldWrite]) {
                             [process write];
                         }
-                        [NSThread sleepForTimeInterval:0.005];
+                        [NSThread sleepForTimeInterval:0.01];
                     }
                 }
             }
@@ -306,7 +307,7 @@
 - (NSMutableArray*)getProcesses {
     NSRecursiveLock *lock = [self getLock];
     [lock lock];
-    NSMutableArray *processesCopy = [ZKHookIvar(self, NSMutableArray *, "processes") copy];
+    NSMutableArray *processesCopy = [[ZKHookIvar(self, NSMutableArray *, "processes") copy] autorelease];
     [lock unlock];
     return processesCopy;
 }
