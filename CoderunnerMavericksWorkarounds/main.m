@@ -199,6 +199,17 @@
     method_setImplementation(releaseMethod, originalReleaseMethodImplementation);
 }
 
+
+// Fix bug: If "Close Brackets" is disabled in Preferences, CodeRunner sometimes skips over manually typed closing brackets,
+// mistakenly treating them as auto-inserted ones.
+- (void)insertText:(id)aString {
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"CloseBracketsEnabled"]) {
+        NSMutableArray *inserts = ZKHookIvar(self, NSMutableArray *, "inserts");
+        [inserts removeAllObjects];
+    }
+    ZKOrig(void, aString);
+}
+
 @end
 
 
