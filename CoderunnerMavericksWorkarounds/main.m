@@ -210,6 +210,22 @@
     ZKOrig(void, aString);
 }
 
+// This is called by the syntax colorer to apply coloring - synchronize it properly
+- (void)syntaxColorer:(id)arg1 didFinishColoringString:(id)arg2 fromRange:(struct _NSRange)arg3 {
+    NSLog(@"CodeRunnerMavericksWorkarounds: syntaxColorer:didFinishColoringString:fromRange: called - range: %@", 
+          NSStringFromRange(arg3));
+    
+    // Log what we're about to apply
+    if ([arg2 isKindOfClass:[NSAttributedString class]]) {
+        NSAttributedString *attrString = (NSAttributedString *)arg2;
+        NSString *substring = [[attrString string] substringToIndex:MIN(50, [attrString length])];
+        NSLog(@"CodeRunnerMavericksWorkarounds: Attributed string preview: %@...", substring);
+    }
+    
+    // Call original implementation
+    ZKOrig(void, arg1, arg2, arg3);
+}
+
 @end
 
 
@@ -393,8 +409,38 @@
 @implementation mySyntaxColorer : NSObject
 
 - (void)didChangeTextInLineRange:(struct _NSRange)arg1 newLength:(unsigned long long)arg2 {
-    dispatch_sync(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^(void){
-        ZKOrig(void, arg1, arg2);
+    // Call original
+    ZKOrig(void, arg1, arg2);
+    
+    // After coloring, trigger a redraw without visible selection
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+        id delegate = ZKHookIvar(self, id, "delegate");
+        if ([delegate isKindOfClass:[NSTextView class]]) {
+            NSTextView *textView = (NSTextView *)delegate;
+            NSLayoutManager *layoutManager = [textView layoutManager];
+            
+            if (layoutManager) {
+                // Get the visible range
+                NSRect visibleRect = [[[textView enclosingScrollView] contentView] visibleRect];
+                NSRange glyphRange = [layoutManager glyphRangeForBoundingRect:visibleRect 
+                                                              inTextContainer:[textView textContainer]];
+                NSRange visibleCharRange = [layoutManager characterRangeForGlyphRange:glyphRange 
+                                                                     actualGlyphRange:NULL];
+                
+                // Force the layout manager to redraw just the visible area
+                [layoutManager invalidateDisplayForCharacterRange:visibleCharRange];
+                
+                // Also invalidate layout to force complete recalculation
+                [layoutManager invalidateLayoutForCharacterRange:visibleCharRange 
+                                            actualCharacterRange:NULL];
+                
+                // Force immediate display
+                [textView setNeedsDisplayInRect:visibleRect avoidAdditionalLayout:NO];
+                [textView displayIfNeeded];
+                
+                NSLog(@"CodeRunnerMavericksWorkarounds: Forced redraw of visible area without selection");
+            }
+        }
     });
 }
 
