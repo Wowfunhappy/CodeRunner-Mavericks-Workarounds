@@ -410,10 +410,11 @@
 
 - (void)didChangeTextInLineRange:(struct _NSRange)arg1 newLength:(unsigned long long)arg2 {
     // Call original
+    NSDisableScreenUpdates();
     ZKOrig(void, arg1, arg2);
     
     // After coloring, trigger a redraw without visible selection
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.15 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
         id delegate = ZKHookIvar(self, id, "delegate");
         if ([delegate isKindOfClass:[NSTextView class]]) {
             NSTextView *textView = (NSTextView *)delegate;
@@ -437,7 +438,7 @@
                 // Force immediate display
                 [textView setNeedsDisplayInRect:visibleRect avoidAdditionalLayout:NO];
                 [textView displayIfNeeded];
-                
+                NSEnableScreenUpdates();
                 NSLog(@"CodeRunnerMavericksWorkarounds: Forced redraw of visible area without selection");
             }
         }
