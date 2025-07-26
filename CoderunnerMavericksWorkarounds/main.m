@@ -2,6 +2,12 @@
 #import <AppKit/AppKit.h>
 #import "ZKSwizzle.h"
 
+// Global variables for text corruption detection
+// When syntax coloring processes large chunks (>3000 chars) after an edit,
+// it can cause text corruption. We track this pattern and apply a fix.
+static BOOL needsCorruptionFix = NO;
+static NSTimeInterval lastTextChangeTime = 0;
+
 
 
 
@@ -210,20 +216,53 @@
     ZKOrig(void, aString);
 }
 
-// This is called by the syntax colorer to apply coloring - synchronize it properly
+// Fix for text corruption during syntax coloring
 - (void)syntaxColorer:(id)arg1 didFinishColoringString:(id)arg2 fromRange:(struct _NSRange)arg3 {
-    NSLog(@"CodeRunnerMavericksWorkarounds: syntaxColorer:didFinishColoringString:fromRange: called - range: %@", 
-          NSStringFromRange(arg3));
+    // Detect corruption pattern: large coloring operations (>3000 chars) within 500ms of a text change
+    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+    BOOL isLargeColoring = arg3.length > 3000;
+    BOOL isRecentChange = (now - lastTextChangeTime) < 0.5;
     
-    // Log what we're about to apply
-    if ([arg2 isKindOfClass:[NSAttributedString class]]) {
-        NSAttributedString *attrString = (NSAttributedString *)arg2;
-        NSString *substring = [[attrString string] substringToIndex:MIN(50, [attrString length])];
-        NSLog(@"CodeRunnerMavericksWorkarounds: Attributed string preview: %@...", substring);
+    if (isLargeColoring && isRecentChange) {
+        needsCorruptionFix = YES;
     }
     
-    // Call original implementation
     ZKOrig(void, arg1, arg2, arg3);
+    
+    // Apply corruption fix if needed
+    if (needsCorruptionFix && isRecentChange) {
+        NSLog(@"CodeRunnerMavericksWorkarounds: Applying text corruption fix");
+        
+        // The fix: select and deselect the visible range to force proper text rendering
+        void (^applyFix)(void) = ^{
+            NSArray *originalSelection = [self selectedRanges];
+            
+            // Get the visible character range
+            NSRect visibleRect = [[[self enclosingScrollView] contentView] visibleRect];
+            NSRange glyphRange = [[self layoutManager] glyphRangeForBoundingRect:visibleRect 
+                                                                 inTextContainer:[self textContainer]];
+            NSRange visibleCharRange = [[self layoutManager] characterRangeForGlyphRange:glyphRange 
+                                                                            actualGlyphRange:NULL];
+            
+            // Apply the select/deselect fix with screen updates disabled
+            NSDisableScreenUpdates();
+            [self setSelectedRange:visibleCharRange];
+            [self setSelectedRanges:originalSelection];
+            NSEnableScreenUpdates();
+        };
+        
+        // Check if text storage is currently being edited
+        NSTextStorage *textStorage = [self textStorage];
+        if ([textStorage editedMask] != 0) {
+            // Defer the fix until after editing completes to avoid exceptions
+            dispatch_async(dispatch_get_main_queue(), applyFix);
+        } else {
+            // Safe to apply immediately
+            applyFix();
+        }
+        
+        needsCorruptionFix = NO; // Reset after applying
+    }
 }
 
 @end
@@ -403,46 +442,32 @@
 
 
 
+
+
+
+/* 
+ * Fix for syntax coloring text corruption on Mavericks
+ * 
+ * Problem: When syntax coloring processes large chunks of text (>3000 chars) shortly after
+ * an edit, it can cause text corruption where characters appear garbled or misplaced.
+ * 
+ * Solution: We detect this pattern and apply a workaround where we select and immediately
+ * deselect the visible text range, which forces AppKit to properly re-render the text.
+ */
+
 @interface mySyntaxColorer : NSObject
 @end
 
 @implementation mySyntaxColorer : NSObject
 
+// Track when text changes occur to detect corruption patterns
 - (void)didChangeTextInLineRange:(struct _NSRange)arg1 newLength:(unsigned long long)arg2 {
-    // Call original
-    NSDisableScreenUpdates();
-    ZKOrig(void, arg1, arg2);
+    // Record the time of this text change
+    lastTextChangeTime = [[NSDate date] timeIntervalSince1970];
+    needsCorruptionFix = NO; // Reset the fix flag for this new change
     
-    // After coloring, trigger a redraw without visible selection
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
-        id delegate = ZKHookIvar(self, id, "delegate");
-        if ([delegate isKindOfClass:[NSTextView class]]) {
-            NSTextView *textView = (NSTextView *)delegate;
-            NSLayoutManager *layoutManager = [textView layoutManager];
-            
-            if (layoutManager) {
-                // Get the visible range
-                NSRect visibleRect = [[[textView enclosingScrollView] contentView] visibleRect];
-                NSRange glyphRange = [layoutManager glyphRangeForBoundingRect:visibleRect 
-                                                              inTextContainer:[textView textContainer]];
-                NSRange visibleCharRange = [layoutManager characterRangeForGlyphRange:glyphRange 
-                                                                     actualGlyphRange:NULL];
-                
-                // Force the layout manager to redraw just the visible area
-                [layoutManager invalidateDisplayForCharacterRange:visibleCharRange];
-                
-                // Also invalidate layout to force complete recalculation
-                [layoutManager invalidateLayoutForCharacterRange:visibleCharRange 
-                                            actualCharacterRange:NULL];
-                
-                // Force immediate display
-                [textView setNeedsDisplayInRect:visibleRect avoidAdditionalLayout:NO];
-                [textView displayIfNeeded];
-                NSEnableScreenUpdates();
-                NSLog(@"CodeRunnerMavericksWorkarounds: Forced redraw of visible area without selection");
-            }
-        }
-    });
+    // Call original implementation
+    ZKOrig(void, arg1, arg2);
 }
 
 @end
