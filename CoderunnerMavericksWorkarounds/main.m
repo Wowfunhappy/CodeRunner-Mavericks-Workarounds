@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
+#import <dlfcn.h>
 #import "ZKSwizzle.h"
 
 // Global variables for text corruption detection
@@ -182,6 +183,7 @@ static NSTimeInterval lastTextChangeTime = 0;
     [super quickLookWithEvent:arg1];
 }
 
+
 /*
  CodeRunner crashes when the user tries to print (As in, to a paper printer.)
  
@@ -204,6 +206,7 @@ static NSTimeInterval lastTextChangeTime = 0;
     // Replace [NSAttributeDictionary release] with original function
     method_setImplementation(releaseMethod, originalReleaseMethodImplementation);
 }
+
 
 
 // Fix bug: If "Close Brackets" is disabled in Preferences, CodeRunner sometimes skips over manually typed closing brackets,
@@ -407,7 +410,8 @@ static NSTimeInterval lastTextChangeTime = 0;
 - (BOOL)readFromURL:(id)arg1 ofType:(id)arg2 error:(NSError **)arg3 {
     NSData* runCommand = [[NSFileManager defaultManager] extendedAttribute:@"CodeRunner:RunCommand" atPath:arg1];
     if (runCommand) {
-        [self performSelector:@selector(setRunCommand:) withObject:([[NSString alloc] initWithData:runCommand encoding:NSUTF8StringEncoding]) afterDelay:0];
+        NSString *runCommandString = [[[NSString alloc] initWithData:runCommand encoding:NSUTF8StringEncoding] autorelease];
+        [self performSelector:@selector(setRunCommand:) withObject:runCommandString afterDelay:0];
     }
     return ZKOrig(BOOL, arg1, arg2, arg3);
 }
@@ -442,18 +446,15 @@ static NSTimeInterval lastTextChangeTime = 0;
 
 
 
-
-
-
 /* 
- * Fix for syntax coloring text corruption on Mavericks
- * 
- * Problem: When syntax coloring processes large chunks of text (>3000 chars) shortly after
- * an edit, it can cause text corruption where characters appear garbled or misplaced.
- * 
- * Solution: We detect this pattern and apply a workaround where we select and immediately
- * deselect the visible text range, which forces AppKit to properly re-render the text.
- */
+Fix for syntax coloring text corruption on Mavericks
+ 
+Problem: When syntax coloring processes large chunks of text (>3000 chars) shortly after
+an edit, it can cause text corruption where characters appear garbled or misplaced.
+ 
+Solution: We detect this pattern and apply a workaround where we select and immediately
+deselect the visible text range, which forces AppKit to properly re-render the text.
+*/
 
 @interface mySyntaxColorer : NSObject
 @end
