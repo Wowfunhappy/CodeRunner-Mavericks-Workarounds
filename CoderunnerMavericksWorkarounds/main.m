@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <dlfcn.h>
+#import <CoreServices/CoreServices.h>
 #import "ZKSwizzle.h"
 
 // Global variables for text corruption detection
@@ -153,20 +154,70 @@ static NSTimeInterval lastTextChangeTime = 0;
 @implementation myEditor
 
 /*
+ Fix Automator services receiving empty strings instead of selected text.
+ The issue is that writeSelectionToPasteboard:type: in CodeRunner's Editor class
+ doesn't properly handle the NSStringPboardType for services.
+ */
+- (BOOL)writeSelectionToPasteboard:(NSPasteboard *)pboard type:(NSString *)type {
+    // Check if this is a service request for string data
+    if ([type isEqualToString:NSStringPboardType] || [type isEqualToString:(NSString *)kUTTypeUTF8PlainText]) {
+        // Get the selected text directly
+        NSArray *selectedRanges = [self selectedRanges];
+        if ([selectedRanges count] > 0) {
+            NSMutableString *selectedText = [NSMutableString string];
+            NSString *fullString = [self string];
+            
+            // Handle multiple selections
+            for (NSValue *rangeValue in selectedRanges) {
+                NSRange range = [rangeValue rangeValue];
+                if (NSMaxRange(range) <= [fullString length]) {
+                    NSString *substring = [fullString substringWithRange:range];
+                    if ([selectedText length] > 0) {
+                        [selectedText appendString:@"\n"];
+                    }
+                    [selectedText appendString:substring];
+                }
+            }
+            
+            if ([selectedText length] > 0) {
+                [pboard clearContents];
+                [pboard setString:selectedText forType:type];
+                return YES;
+            }
+        }
+    }
+    
+    return ZKOrig(BOOL, pboard, type);
+}
+
+
+/*
  Highlight matching parenthesis/brackets (for more than a few seconds).
  Not technically a bug fix, but a feature I need!
  */
 
 - (void)showFindIndicatorForRange:(NSRange)charRange {
     ZKOrig(void, charRange);
-    if ([[self textStorage] length] > 0) {
-        [[self textStorage] addAttribute:NSBackgroundColorAttributeName
-                                   value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.4]
-                                   range:charRange];
-        
-        NSValue *rangeValue = [NSValue valueWithRange:charRange];
-        objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    NSTextStorage *textStorage = [self textStorage];
+    if (!textStorage) {
+        return;
     }
+    
+    NSUInteger textLength = [textStorage length];
+    if (
+        textLength == 0 ||
+        charRange.location == NSNotFound ||
+        charRange.location >= textLength ||
+        NSMaxRange(charRange) > textLength
+    ) {
+        return;
+    }
+    
+    [[self textStorage] addAttribute:NSBackgroundColorAttributeName value:[NSColor colorWithCalibratedWhite:0.5 alpha:0.4] range:charRange];
+    
+    NSValue *rangeValue = [NSValue valueWithRange:charRange];
+    objc_setAssociatedObject(self, @selector(lastMatchHighlight), rangeValue, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (void)setSelectedRanges:(id)arg1 affinity:(unsigned long long)arg2 stillSelecting:(BOOL)arg3{
